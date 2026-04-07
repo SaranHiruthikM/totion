@@ -91,12 +91,40 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 
 		case "ctrl+l":
+			noteList := listFiles()
+			m.list.SetItems(noteList)
 			m.showingList = true
 			return m, nil
 		case "enter":
 			if m.currentFile != nil {
 				break
 			}
+
+			if m.showingList {
+				item, ok := m.list.SelectedItem().(item)
+				if ok {
+					filepath := fmt.Sprintf("%s/%s", vaultDir, item.title)
+					content, err := os.ReadFile(filepath)
+					if err != nil {
+						log.Printf("error reading file: %v", err)
+						return m, nil
+					}
+
+					m.textarea.SetValue(string(content))
+
+					f, err := os.OpenFile(filepath, os.O_RDWR, 0644)
+					if err != nil {
+						log.Printf("error reading file: %v", err)
+						return m, nil
+					}
+
+					m.currentFile = f
+					m.showingList = false
+				}
+
+				return m, nil
+			}
+
 			fileName := m.newFileInput.Value()
 			if fileName != "" {
 				filepath := fmt.Sprintf("%s/%s.md", vaultDir, fileName)
