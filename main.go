@@ -55,6 +55,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.list.SetSize(msg.Width-h, msg.Height-v-5)
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "esc":
+			if m.createFileInputVisible {
+				m.createFileInputVisible = false
+			}
+
+			if m.currentFile != nil {
+				m.currentFile = nil
+			}
+
+			if m.showingList {
+				if m.list.FilterState() == list.Filtering {
+					break
+				}
+				m.showingList = false
+			}
+			return m, nil
 		case "ctrl+c", "q":
 			return m, tea.Quit
 
@@ -173,7 +189,7 @@ func (m model) View() string {
 
 	welcomeMsg := style.Render("Welcome to Totion")
 
-	help := "Ctrl+N: new file | Ctrl+L: list | Esc: back/save | Ctrl+S: save | Ctrl+C: quit"
+	help := "Ctrl+N: new file | Ctrl+L: list | Esc: back | Ctrl+S: save | Ctrl+C: quit"
 
 	view := ""
 	if m.createFileInputVisible {
